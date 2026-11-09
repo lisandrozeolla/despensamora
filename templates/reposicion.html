@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}Reposición{% endblock %}
+{% block content %}
+<h1>Lista de reposición</h1>
+<p class="subtitulo">Anotados → Pedido al proveedor → Recepción (ingreso) o reclamo. Los casos en reclamo se pueden recibir, devolver a pedido o quitar.</p>
+
+<div id="msg"></div>
+
+<div class="split">
+  <div class="panel">
+    <h2>Lista de reposición</h2>
+    <div class="acciones" style="margin-bottom:12px">
+      <button class="btn secundario chico" data-filtro="" id="f-todos">Todos</button>
+      <button class="btn secundario chico" data-filtro="anotado">Anotados</button>
+      <button class="btn secundario chico" data-filtro="pedido">Pedidos</button>
+      <button class="btn secundario chico" data-filtro="recibido">Recibidos</button>
+      <button class="btn secundario chico" data-filtro="reclamo">Reclamos</button>
+    </div>
+    <div id="lista" class="sin-datos">Cargando…</div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>Pedir al proveedor</h2>
+      <div class="campo" style="margin-bottom:10px">
+        <label for="prov-pedido">Proveedor</label>
+        <select id="prov-pedido">
+          <option value="">— Todos los proveedores —</option>
+        </select>
+      </div>
+      <button class="btn" id="btn-pedido" style="width:100%">📤 Generar pedido</button>
+      <!-- Diagrama de contexto: "Solicitud de reposición" -> Dueño -->
+      <button class="btn secundario" id="btn-imprimir"
+              style="width:100%;margin-top:8px">🖨 Imprimir solicitud</button>
+      <p class="subtitulo" style="margin-bottom:0">
+        Pasa los productos <b>anotados</b> al estado “pedido” (paso <i>Pedido al Proveedor</i> del cursograma).
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>Stock mínimo</h2>
+      <button class="btn secundario" id="btn-minimos" style="width:100%">
+        🔻 Anotar todo lo que está en el mínimo
+      </button>
+    </div>
+
+    <div class="panel">
+      <h2>Anotar por código</h2>
+      <div class="campo">
+        <label for="input-manual">Escaneá o escribí el código</label>
+        <input id="input-manual" type="text" placeholder="Código de barras…">
+      </div>
+      <button class="btn secundario" id="btn-anotar" style="margin-top:10px;width:100%">
+        ➕ Anotar en la lista
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let filtro = '';
+const NOMBRE_ESTADO = { anotado: 'Anotado', pedido: 'Pedido', recibido: 'Recibido', reclamo: 'Reclamo' };
+
+function stockClase(p) {
+  if (p.stock_actual === 0) return 'sin-stock';
+  if (p.stock_actual <= p.stock_minimo) return 'poco';
+  return '';
+}
+
+async function cargar() {
+  const lista = await fetch(`/api/reposicion?estado=${filtro}`).then((r) => r.json());
+  const cont = document.getElementById('lista');
+  if (!lista.length) {
+    cont.className = 'sin-datos';
+    cont.textContent = 'No hay casos con este estado.';
+    return;
+  }
+  cont.className = '';
+  cont.innerHTML = `<table><thead><tr>
+      <th>Producto</th><th class="num">Stock</th><th>Cant. a pedir</th>
+      <th>Proveedor</th><th>Estado</th><th></th>
+    </tr></thead><tbody>` +
+    lista.map((i) => {
+      let acciones = '—';
+      if (i.estado === 'anotado' || i.estado === 'pedido') {
+        acciones = `<div class="acciones">
+          <input type="number" min="1" value="${i.cantidad_sugerida}"
+                 style="width:70px" data-cant="${i.id}">
+          <button class="btn chico verde" data-recibir="${i.id}">✓ Recibido</button>
+          <button class="btn chico peligro" data-reclamar="${i.id}">✗ Reclamar</button>
+          <button class="btn chico secundario" data-quitar="${i.id}">🗑 Quitar</button>
+        </div>`;
+      } else if (i.estado === 'reclamo') {
+        // Caso en reclamo: se puede recibir (ingreso), volver a pedido o quitar.
+        acciones = `<div class="acciones">
+          <input type="number" min="1" value="${i.cantidad_sugerida}"
+                 style="width:70px" data-cant="${i.id}">
+          <button class="btn chico verde" data-recibir="${i.id}">✓ Recibir e ingresar</button>
+          <button class="btn chico secundario" data-volver="${i.id}">♻ Volver a pedido</button>
+          <button class="btn chico peligro" data-quitar="${i.id}">🗑 Quitar</button>
+        </div>`;
+      } else if (i.estado === 'recibido') {
+        acciones = `<div class="acciones">
+          <button class="btn chico secundario" data-quitar="${i.id}">🗑 Quitar</button>
+        </div>`;
+      }
+      return `<tr>
+        <td>${i.nombre}</td>
+        <td class="num ${stockClase(i)}">${i.stock_actual} / ${i.stock_minimo}</td>
+        <td class="num">${i.cantidad_sugerida}</td>
+        <td>${i.proveedor}</td>
+        <td><span class="estado ${i.estado}">${NOMBRE_ESTADO[i.estado]}</span></td>
+        <td>${acciones}</td>
+      </tr>`;
+    }).join('') + '</tbody></table>';
+
+  cont.querySelectorAll('[data-recibir]').forEach((btn) => {
+    btn.addEventListener('click', () => cerrar(btn.dataset.recibir, false));
+  });
+  cont.querySelectorAll('[data-reclamar]').forEach((btn) => {
+    btn.addEventListener('click', () => cerrar(btn.dataset.reclamar, true));
+  });
+  cont.querySelectorAll('[data-volver]').forEach((btn) => {
+    btn.addEventListener('click', () => volver(btn.dataset.volver));
+  });
+  cont.querySelectorAll('[data-quitar]').forEach((btn) => {
+    btn.addEventListener('click', () => quitar(btn.dataset.quitar));
+  });
+}
+
+async function cerrar(id, reclamo) {
+  let cantidad = 1;
+  if (!reclamo) {
+    const inp = document.querySelector(`input[data-cant="${id}"]`);
+    cantidad = parseInt(inp.value, 10) || 1;
+  }
+  const r = await fetch(`/api/reposicion/${id}/recepcion`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cantidad, reclamo }),
+  });
+  const d = await r.json();
+  toast(d.mensaje || d.error, r.ok ? 'ok' : 'error');
+  if (r.ok) cargar();
+}
+
+// Devuelve un caso en reclamo al estado 'pedido' (reintento de recepcion).
+async function volver(id) {
+  const r = await fetch(`/api/reposicion/${id}/volver-pedido`, { method: 'POST' });
+  const d = await r.json();
+  toast(d.mensaje || d.error, r.ok ? 'ok' : 'error');
+  if (r.ok) cargar();
+}
+
+// Quita el caso de la lista (no toca stock ni movimientos).
+async function quitar(id) {
+  if (!confirm('¿Quitar este caso de la lista de reposición?')) return;
+  const r = await fetch(`/api/reposicion/${id}`, { method: 'DELETE' });
+  const d = await r.json();
+  toast(d.mensaje || d.error, r.ok ? 'ok' : 'error');
+  if (r.ok) cargar();
+}
+
+async function anotar(codigoOId) {
+  const cuerpo = typeof codigoOId === 'number'
+    ? { producto_id: codigoOId }
+    : { codigo: codigoOId };
+  const r = await fetch('/api/reposicion', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cuerpo),
+  });
+  const d = await r.json();
+  toast(d.mensaje || d.error, r.ok ? 'ok' : 'error');
+  if (r.ok) cargar();
+}
+
+document.querySelectorAll('[data-filtro]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    filtro = btn.dataset.filtro;
+    document.querySelectorAll('[data-filtro]').forEach((b) =>
+      b.classList.toggle('btn', b === btn));
+    cargar();
+  });
+});
+
+document.getElementById('btn-pedido').addEventListener('click', async () => {
+  const prov = document.getElementById('prov-pedido').value;
+  const r = await fetch('/api/reposicion/generar-pedido', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ proveedor_id: prov ? Number(prov) : null }),
+  });
+  const d = await r.json();
+  toast(r.ok ? `Pedido generado: ${d.pedidos} producto(s)` : d.error, r.ok ? 'ok' : 'error');
+  if (r.ok) cargar();
+});
+
+// Abre la solicitud de reposicion imprimible (por proveedor seleccionado).
+document.getElementById('btn-imprimir').addEventListener('click', () => {
+  const prov = document.getElementById('prov-pedido').value;
+  const url = '/imprimir/reposicion' + (prov ? `?proveedor_id=${prov}` : '');
+  window.open(url, '_blank');
+});
+
+document.getElementById('btn-minimos').addEventListener('click', async () => {
+  const r = await fetch('/api/reposicion/anotar-minimos', { method: 'POST' });
+  const d = await r.json();
+  toast(d.anotados ? `${d.anotados} producto(s) anotado(s)` : 'Ya estaba todo anotado');
+  cargar();
+});
+
+document.getElementById('btn-anotar').addEventListener('click', () => {
+  const valor = document.getElementById('input-manual').value.trim();
+  if (!valor) { toast('Escribí un código', 'error'); return; }
+  anotar(valor);
+  document.getElementById('input-manual').value = '';
+});
+
+// Escaneo en esta pantalla: anota el producto en la lista.
+document.addEventListener('scan', (e) => anotar(e.detail.codigo));
+
+// Carga los proveedores para el selector de pedido.
+fetch('/api/proveedores')
+  .then((r) => r.json())
+  .then((provs) => {
+    const sel = document.getElementById('prov-pedido');
+    provs.forEach((p) => {
+      const o = document.createElement('option');
+      o.value = p.id;
+      o.textContent = p.nombre;
+      sel.appendChild(o);
+    });
+  });
+
+cargar();
+</script>
+{% endblock %}

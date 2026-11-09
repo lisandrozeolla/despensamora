@@ -1,0 +1,323 @@
+- generic [ref=f8e1]:
+  - banner [ref=f8e2]:
+    - link "DESPENSA MORA Control de Stock" [ref=f8e3] [cursor=pointer]:
+      - /url: /
+      - text: DESPENSA MORA
+      - generic [ref=f8e4]: Control de Stock
+    - navigation [ref=f8e5]:
+      - link "Tablero" [ref=f8e6] [cursor=pointer]:
+        - /url: /
+      - link "Venta" [ref=f8e7] [cursor=pointer]:
+        - /url: /venta
+      - link "Ingresos" [ref=f8e8] [cursor=pointer]:
+        - /url: /ingreso
+      - link "Reposición 2" [ref=f8e9] [cursor=pointer]:
+        - /url: /reposicion
+      - link "Productos" [ref=f8e10] [cursor=pointer]:
+        - /url: /productos
+      - link "Proveedores" [ref=f8e11] [cursor=pointer]:
+        - /url: /proveedores
+      - link "Etiquetas" [ref=f8e12] [cursor=pointer]:
+        - /url: /etiquetas
+      - link "Manual" [ref=f8e13] [cursor=pointer]:
+        - /url: /manual
+      - link "Doc. técnica" [ref=f8e14] [cursor=pointer]:
+        - /url: /documentacion
+  - generic [ref=f8e15]:
+    - generic [ref=f8e16]: ▮▮▮
+    - textbox "Escaneá el código de barras (o escribilo) y presioná Enter…" [active] [ref=f8e17]
+    - generic [ref=f8e18]: Lector USB listo
+  - main [ref=f8e19]:
+    - heading "Documentación técnica" [level=1] [ref=f8e20]
+    - paragraph [ref=f8e21]: Arquitectura, modelo de datos y API del sistema · EDT 5.1.2
+    - generic [ref=f8e22]:
+      - heading "1. Arquitectura del sistema" [level=2] [ref=f8e23]
+      - paragraph [ref=f8e24]: "Aplicación web local de tres capas, sin servidor externo:"
+      - generic [ref=f8e25]: Navegador (HTML + CSS + JavaScript) │ fetch() — API JSON ▼ Flask (Python) — app.py ← Lector USB = teclado (barra de escaneo) │ sqlite3 ▼ Base de datos SQLite — stock.db
+      - table [ref=f8e26]:
+        - rowgroup [ref=f8e27]:
+          - row [ref=f8e28]:
+            - columnheader "Componente" [ref=f8e29]
+            - columnheader "Tecnología" [ref=f8e30]
+            - columnheader "Archivo" [ref=f8e31]
+        - rowgroup [ref=f8e32]:
+          - row [ref=f8e33]:
+            - cell "Backend / API" [ref=f8e34]
+            - cell "Python · Flask" [ref=f8e35]
+            - cell [ref=f8e36]:
+              - code [ref=f8e37]: app.py
+          - row [ref=f8e38]:
+            - cell "Persistencia" [ref=f8e39]
+            - cell [ref=f8e40]:
+              - text: SQLite (stdlib
+              - code [ref=f8e41]: sqlite3
+              - text: )
+            - cell [ref=f8e42]:
+              - code [ref=f8e43]: db.py
+              - text: ·
+              - code [ref=f8e44]: stock.db
+          - row [ref=f8e45]:
+            - cell "Frontend" [ref=f8e46]
+            - cell "HTML + CSS + JavaScript vanilla" [ref=f8e47]
+            - cell [ref=f8e48]:
+              - code [ref=f8e49]: templates/
+              - text: ·
+              - code [ref=f8e50]: static/
+          - row [ref=f8e51]:
+            - cell "Códigos de barras" [ref=f8e52]
+            - cell "python-barcode (EAN-13 / CODE128 en SVG)" [ref=f8e53]
+            - cell [ref=f8e54]:
+              - code [ref=f8e55]: requirements.txt
+    - generic [ref=f8e56]:
+      - heading "2. Modelo de datos (diseño de base de datos — EDT 3.3.1 / RACI)" [level=2] [ref=f8e57]
+      - heading "productos" [level=3] [ref=f8e58]
+      - table [ref=f8e59]:
+        - rowgroup [ref=f8e60]:
+          - row [ref=f8e61]:
+            - columnheader "Campo" [ref=f8e62]
+            - columnheader "Tipo" [ref=f8e63]
+            - columnheader "Descripción" [ref=f8e64]
+        - rowgroup [ref=f8e65]:
+          - row [ref=f8e66]:
+            - cell "id" [ref=f8e67]
+            - cell "INTEGER PK" [ref=f8e68]
+            - cell "Identificador" [ref=f8e69]
+          - row [ref=f8e70]:
+            - cell "codigo_barras" [ref=f8e71]
+            - cell "TEXT UNIQUE" [ref=f8e72]
+            - cell "Código EAN-13 (o CODE128) escaneado" [ref=f8e73]
+          - row [ref=f8e74]:
+            - cell "nombre" [ref=f8e75]
+            - cell "TEXT" [ref=f8e76]
+            - cell "Descripción del producto" [ref=f8e77]
+          - row [ref=f8e78]:
+            - cell "categoria" [ref=f8e79]
+            - cell "TEXT" [ref=f8e80]
+            - cell "Almacén, Bebidas, Lácteos…" [ref=f8e81]
+          - row [ref=f8e82]:
+            - cell "precio" [ref=f8e83]
+            - cell "REAL" [ref=f8e84]
+            - cell "Precio de venta" [ref=f8e85]
+          - row [ref=f8e86]:
+            - cell "stock_actual" [ref=f8e87]
+            - cell "INTEGER" [ref=f8e88]
+            - cell "Unidades disponibles" [ref=f8e89]
+          - row [ref=f8e90]:
+            - cell "stock_minimo" [ref=f8e91]
+            - cell "INTEGER" [ref=f8e92]
+            - cell "Umbral de reposición" [ref=f8e93]
+          - row [ref=f8e94]:
+            - cell "proveedor_id" [ref=f8e95]
+            - cell "INTEGER FK" [ref=f8e96]
+            - cell "Proveedor asociado" [ref=f8e97]
+      - heading "proveedores" [level=3] [ref=f8e98]
+      - paragraph [ref=f8e99]:
+        - code [ref=f8e100]: id
+        - text: ","
+        - code [ref=f8e101]: nombre
+        - text: (único),
+        - code [ref=f8e102]: contacto
+        - text: .
+      - heading "movimientos" [level=3] [ref=f8e103]
+      - paragraph [ref=f8e104]:
+        - code [ref=f8e105]: id
+        - text: ","
+        - code [ref=f8e106]: producto_id
+        - text: (FK),
+        - code [ref=f8e107]: tipo
+        - text: (entrada / salida),
+        - code [ref=f8e108]: cantidad
+        - text: ","
+        - code [ref=f8e109]: motivo
+        - text: ","
+        - code [ref=f8e110]: fecha
+        - text: . Cada venta genera salidas; cada recepción o ingreso genera entradas.
+      - heading "lista_reposicion" [level=3] [ref=f8e111]
+      - paragraph [ref=f8e112]:
+        - code [ref=f8e113]: id
+        - text: ","
+        - code [ref=f8e114]: producto_id
+        - text: (FK),
+        - code [ref=f8e115]: cantidad_sugerida
+        - text: ","
+        - code [ref=f8e116]: estado
+        - text: (anotado → pedido → recibido / reclamo),
+        - code [ref=f8e117]: fecha
+        - text: . Estados y transiciones según el cursograma “Control Stock”.
+    - generic [ref=f8e118]:
+      - heading "3. API (endpoints)" [level=2] [ref=f8e119]
+      - heading "Productos" [level=3] [ref=f8e120]
+      - table [ref=f8e121]:
+        - rowgroup [ref=f8e122]:
+          - row [ref=f8e123]:
+            - columnheader "Método" [ref=f8e124]
+            - columnheader "Ruta" [ref=f8e125]
+            - columnheader "Función" [ref=f8e126]
+        - rowgroup [ref=f8e127]:
+          - row [ref=f8e128]:
+            - cell "GET" [ref=f8e129]
+            - cell [ref=f8e130]:
+              - code [ref=f8e131]: /api/productos?q=
+            - cell "Listar / buscar productos" [ref=f8e132]
+          - row [ref=f8e133]:
+            - cell "GET" [ref=f8e134]
+            - cell [ref=f8e135]:
+              - code [ref=f8e136]: /api/productos/buscar?codigo=
+            - cell "Buscar por código escaneado" [ref=f8e137]
+          - row [ref=f8e138]:
+            - cell "POST" [ref=f8e139]
+            - cell [ref=f8e140]:
+              - code [ref=f8e141]: /api/productos
+            - cell "Alta de producto" [ref=f8e142]
+          - row [ref=f8e143]:
+            - cell "PUT" [ref=f8e144]
+            - cell [ref=f8e145]:
+              - code [ref=f8e146]: /api/productos/<id>
+            - cell "Edición" [ref=f8e147]
+          - row [ref=f8e148]:
+            - cell "DELETE" [ref=f8e149]
+            - cell [ref=f8e150]:
+              - code [ref=f8e151]: /api/productos/<id>
+            - cell "Baja" [ref=f8e152]
+      - heading "Proveedores" [level=3] [ref=f8e153]
+      - table [ref=f8e154]:
+        - rowgroup [ref=f8e155]:
+          - row [ref=f8e156]:
+            - columnheader "Método" [ref=f8e157]
+            - columnheader "Ruta" [ref=f8e158]
+            - columnheader "Función" [ref=f8e159]
+        - rowgroup [ref=f8e160]:
+          - row [ref=f8e161]:
+            - cell "GET" [ref=f8e162]
+            - cell [ref=f8e163]:
+              - code [ref=f8e164]: /api/proveedores
+            - cell "Listar (con conteo de productos)" [ref=f8e165]
+          - row [ref=f8e166]:
+            - cell "POST" [ref=f8e167]
+            - cell [ref=f8e168]:
+              - code [ref=f8e169]: /api/proveedores
+            - cell "Alta" [ref=f8e170]
+          - row [ref=f8e171]:
+            - cell "DELETE" [ref=f8e172]
+            - cell [ref=f8e173]:
+              - code [ref=f8e174]: /api/proveedores/<id>
+            - cell "Baja (si no tiene productos)" [ref=f8e175]
+      - heading "Venta y ingresos" [level=3] [ref=f8e176]
+      - table [ref=f8e177]:
+        - rowgroup [ref=f8e178]:
+          - row [ref=f8e179]:
+            - columnheader "Método" [ref=f8e180]
+            - columnheader "Ruta" [ref=f8e181]
+            - columnheader "Función" [ref=f8e182]
+        - rowgroup [ref=f8e183]:
+          - row [ref=f8e184]:
+            - cell "POST" [ref=f8e185]
+            - cell [ref=f8e186]:
+              - code [ref=f8e187]: /api/venta
+            - cell "Valida stock, descuenta y registra salidas; anota en reposición si llega al mínimo" [ref=f8e188]
+          - row [ref=f8e189]:
+            - cell "POST" [ref=f8e190]
+            - cell [ref=f8e191]:
+              - code [ref=f8e192]: /api/ingreso
+            - 'cell "Ingreso directo: suma stock y registra entradas" [ref=f8e193]'
+      - heading "Lista de reposición" [level=3] [ref=f8e194]
+      - table [ref=f8e195]:
+        - rowgroup [ref=f8e196]:
+          - row [ref=f8e197]:
+            - columnheader "Método" [ref=f8e198]
+            - columnheader "Ruta" [ref=f8e199]
+            - columnheader "Función" [ref=f8e200]
+        - rowgroup [ref=f8e201]:
+          - row [ref=f8e202]:
+            - cell "GET" [ref=f8e203]
+            - cell [ref=f8e204]:
+              - code [ref=f8e205]: /api/reposicion?estado=
+            - cell "Listar por estado" [ref=f8e206]
+          - row [ref=f8e207]:
+            - cell "POST" [ref=f8e208]
+            - cell [ref=f8e209]:
+              - code [ref=f8e210]: /api/reposicion
+            - cell "Anotar producto (por id o código)" [ref=f8e211]
+          - row [ref=f8e212]:
+            - cell "POST" [ref=f8e213]
+            - cell [ref=f8e214]:
+              - code [ref=f8e215]: /api/reposicion/anotar-minimos
+            - cell "Anotar todos los que están en el mínimo" [ref=f8e216]
+          - row [ref=f8e217]:
+            - cell "POST" [ref=f8e218]
+            - cell [ref=f8e219]:
+              - code [ref=f8e220]: /api/reposicion/generar-pedido
+            - cell "Anotados → pedido (por proveedor)" [ref=f8e221]
+          - row [ref=f8e222]:
+            - cell "POST" [ref=f8e223]
+            - cell [ref=f8e224]:
+              - code [ref=f8e225]: /api/reposicion/<id>/recepcion
+            - 'cell "Recepción: ingreso (suma stock) o reclamo" [ref=f8e226]'
+      - heading "Tablero, alertas e impresión" [level=3] [ref=f8e227]
+      - table [ref=f8e228]:
+        - rowgroup [ref=f8e229]:
+          - row [ref=f8e230]:
+            - columnheader "Método" [ref=f8e231]
+            - columnheader "Ruta" [ref=f8e232]
+            - columnheader "Función" [ref=f8e233]
+        - rowgroup [ref=f8e234]:
+          - row [ref=f8e235]:
+            - cell "GET" [ref=f8e236]
+            - cell [ref=f8e237]:
+              - code [ref=f8e238]: /api/dashboard
+            - cell "Indicadores y últimos movimientos" [ref=f8e239]
+          - row [ref=f8e240]:
+            - cell "GET" [ref=f8e241]
+            - cell [ref=f8e242]:
+              - code [ref=f8e243]: /api/alertas
+            - cell "Faltantes, bajo mínimo y reclamos" [ref=f8e244]
+          - row [ref=f8e245]:
+            - cell "GET" [ref=f8e246]
+            - cell [ref=f8e247]:
+              - code [ref=f8e248]: /api/movimientos?limit=
+            - cell "Historial de movimientos" [ref=f8e249]
+          - row [ref=f8e250]:
+            - cell "GET" [ref=f8e251]
+            - cell [ref=f8e252]:
+              - code [ref=f8e253]: /api/etiqueta/<id>
+            - cell "Etiqueta SVG con código de barras" [ref=f8e254]
+      - heading "Vistas" [level=3] [ref=f8e255]
+      - paragraph [ref=f8e256]:
+        - code [ref=f8e257]: /
+        - text: (Tablero) ·
+        - code [ref=f8e258]: /venta
+        - text: ·
+        - code [ref=f8e259]: /ingreso
+        - text: ·
+        - code [ref=f8e260]: /reposicion
+        - text: ·
+        - code [ref=f8e261]: /productos
+        - text: ·
+        - code [ref=f8e262]: /proveedores
+        - text: ·
+        - code [ref=f8e263]: /etiquetas
+        - text: ·
+        - code [ref=f8e264]: /manual
+        - text: ·
+        - code [ref=f8e265]: /documentacion
+        - text: ·
+        - code [ref=f8e266]: /imprimir/reposicion
+    - generic [ref=f8e267]:
+      - heading "4. Integración con el lector de códigos de barras" [level=2] [ref=f8e268]
+      - paragraph [ref=f8e269]:
+        - text: "El lector USB funciona como teclado (keyboard wedge): escribe el código en el campo"
+        - code [ref=f8e270]: "#scan-input"
+        - text: de la barra superior y envía Enter. El archivo
+        - code [ref=f8e271]: static/js/scanner.js
+        - text: detecta la tecla Enter, limpia el campo y dispara un evento
+        - code [ref=f8e272]: scan
+        - text: en la página activa; cada pantalla decide qué hacer con el código (agregar a la venta, buscar el producto, anotar en reposición…).
+    - generic [ref=f8e273]:
+      - heading "5. Instalación y ejecución" [level=2] [ref=f8e274]
+      - generic [ref=f8e275]: "pip install -r requirements.txt # Flask + python-barcode python app.py # crea stock.db con datos de ejemplo # abrir http://127.0.0.1:5000"
+      - paragraph [ref=f8e276]:
+        - text: "Para reiniciar los datos de ejemplo: borrar"
+        - code [ref=f8e277]: stock.db
+        - text: y ejecutar
+        - code [ref=f8e278]: python db.py
+        - text: .

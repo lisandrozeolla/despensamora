@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Tablero{% endblock %} · Despensa Mora</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">DESPENSA MORA<span>Control de Stock</span></a>
+    <nav class="nav">
+      <a href="/" class="{{ 'active' if activo == 'dashboard' }}">Dashboard</a>
+      <a href="/venta" class="{{ 'active' if activo == 'venta' }}">Venta</a>
+      <a href="/ingreso" class="{{ 'active' if activo == 'ingreso' }}">Ingresos</a>
+      <a href="/reposicion" class="{{ 'active' if activo == 'reposicion' }}">
+        Reposición <span id="badge-reposicion" class="badge hidden"></span>
+      </a>
+      <a href="/productos" class="{{ 'active' if activo == 'productos' }}">Productos</a>
+      <a href="/proveedores" class="{{ 'active' if activo == 'proveedores' }}">Proveedores</a>
+      <a href="/etiquetas" class="{{ 'active' if activo == 'etiquetas' }}">Etiquetas</a>
+    </nav>
+  </header>
+
+  <!-- Barra de escaneo: el lector USB escribe aca como si fuera un teclado -->
+  <div class="scanbar">
+    <span class="scan-icon">▮▮▮</span>
+    <input id="scan-input" type="text" autocomplete="off"
+           placeholder="Escaneá el código de barras (o escribilo) y presioná Enter…">
+    <span class="scan-hint">Lector USB listo</span>
+  </div>
+
+  <main class="pagina">
+    {% block content %}{% endblock %}
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Proveedores{% endblock %}
+{% block content %}
+<h1>Proveedores</h1>
+<p class="subtitulo">Mayorista y minorista: de quién se repone cada producto.</p>
+
+<div id="msg"></div>
+
+<div class="split">
+  <div class="panel">
+    <h2>Listado</h2>
+    <div id="tabla" class="sin-datos">Cargando…</div>
+  </div>
+
+  <div class="panel">
+    <h2 id="form-titulo">Alta de proveedor</h2>
+    <form id="form" class="form-grid" style="grid-template-columns:1fr">
+      <input type="hidden" id="pr-id">
+      <div class="campo"><label>Nombre *</label>
+        <input id="pr-nombre" type="text" required placeholder="Ej: Distribuidora El Sol"></div>
+      <div class="campo"><label>Contacto</label>
+        <input id="pr-contacto" type="text" placeholder="Teléfono / email"></div>
+      <div class="acciones">
+        <button class="btn" type="submit">Guardar</button>
+        <button class="btn secundario" type="button" id="btn-cancelar" hidden>Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const form = document.getElementById('form');
+let todos = [];
+
+function mostrarMsg(texto, tipo) {
+  const el = document.getElementById('msg');
+  el.innerHTML = texto ? `<div class="mensaje ${tipo}">${texto}</div>` : '';
+}
+
+function limpiar() {
+  form.reset();
+  document.getElementById('pr-id').value = '';
+  document.getElementById('form-titulo').textContent = 'Alta de proveedor';
+  document.getElementById('btn-cancelar').hidden = true;
+}
+
+async function cargar() {
+  todos = await fetch('/api/proveedores').then((r) => r.json());
+  const cont = document.getElementById('tabla');
+  if (!todos.length) {
+    cont.className = 'sin-datos';
+    cont.textContent = 'Sin proveedores cargados.';
+    return;
+  }
+  cont.className = '';
+  cont.innerHTML = `<table><thead><tr>
+      <th>Proveedor</th><th>Contacto</th><th class="num">Productos</th><th></th>
+    </tr></thead><tbody>` +
+    todos.map((p) => `<tr>
+      <td><b>${p.nombre}</b></td>
+      <td>${p.contacto || '—'}</td>
+      <td class="num">${p.productos}</td>
+      <td><div class="acciones">
+        <button class="btn chico secundario" data-editar="${p.id}">Editar</button>
+        <button class="btn chico peligro" data-borrar="${p.id}">Baja</button>
+      </div></td>
+    </tr>`).join('') + '</tbody></table>';
+
+  cont.querySelectorAll('[data-editar]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const p = todos.find((x) => x.id === Number(btn.dataset.editar));
+      document.getElementById('pr-id').value = p.id;
+      document.getElementById('pr-nombre').value = p.nombre;
+      document.getElementById('pr-contacto').value = p.contacto || '';
+      document.getElementById('form-titulo').textContent = `Editando: ${p.nombre}`;
+      document.getElementById('btn-cancelar').hidden = false;
+    });
+  });
+  cont.querySelectorAll('[data-borrar]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const r = await fetch(`/api/proveedores/${btn.dataset.borrar}`, { method: 'DELETE' });
+      const d = await r.json();
+      toast(d.ok ? 'Proveedor eliminado' : d.error, r.ok ? 'ok' : 'error');
+      cargar();
+    });
+  });
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('pr-id').value;
+  // Alta por ahora; la edicion se realiza re-cargando el alta (nombre unico).
+  const r = await fetch('/api/proveedores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nombre: document.getElementById('pr-nombre').value.trim(),
+      contacto: document.getElementById('pr-contacto').value.trim(),
+    }),
+  });
+  const d = await r.json();
+  if (!r.ok) { mostrarMsg(d.error, 'error'); return; }
+  mostrarMsg(`✅ Proveedor ${d.nombre} guardado`, 'ok');
+  limpiar();
+  cargar();
+});
+
+document.getElementById('btn-cancelar').addEventListener('click', limpiar);
+cargar();
+</script>
+{% endblock %}

@@ -1,0 +1,122 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "DESPENSA MORA Control de Stock" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - text: DESPENSA MORA
+      - generic [ref=e4]: Control de Stock
+    - navigation [ref=e5]:
+      - link "Tablero" [ref=e6] [cursor=pointer]:
+        - /url: /
+      - link "Venta" [ref=e7] [cursor=pointer]:
+        - /url: /venta
+      - link "Ingresos" [ref=e8] [cursor=pointer]:
+        - /url: /ingreso
+      - link "Reposición 4" [ref=e9] [cursor=pointer]:
+        - /url: /reposicion
+      - link "Productos" [ref=e10] [cursor=pointer]:
+        - /url: /productos
+      - link "Proveedores" [ref=e11] [cursor=pointer]:
+        - /url: /proveedores
+      - link "Etiquetas" [ref=e12] [cursor=pointer]:
+        - /url: /etiquetas
+  - generic [ref=e13]:
+    - generic [ref=e14]: ▮▮▮
+    - textbox "Escaneá el código de barras (o escribilo) y presioná Enter…" [active] [ref=e15]
+    - generic [ref=e16]: Lector USB listo
+  - main [ref=e17]:
+    - heading "Tablero de indicadores" [level=1] [ref=e18]
+    - paragraph [ref=e19]: Estado general del stock de Despensa Mora
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]: Valor del stock
+        - generic [ref=e23]: $ 835.800,00
+      - generic [ref=e24]:
+        - generic [ref=e25]: Productos
+        - generic [ref=e26]: "18"
+      - generic [ref=e27]:
+        - generic [ref=e28]: Unidades en stock
+        - generic [ref=e29]: "318"
+      - generic [ref=e30]:
+        - generic [ref=e31]: Faltantes (0 unidades)
+        - generic [ref=e32]: "1"
+      - generic [ref=e33]:
+        - generic [ref=e34]: Bajo mínimo
+        - generic [ref=e35]: "3"
+      - generic [ref=e36]:
+        - generic [ref=e37]: Pendientes de reposición
+        - generic [ref=e38]: "3"
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - heading "Notifica faltantes" [level=2] [ref=e41]
+        - paragraph [ref=e42]: Productos sin stock o en el mínimo — solicitud de reposición al proveedor
+        - table [ref=e44]:
+          - rowgroup [ref=e45]:
+            - row [ref=e46]:
+              - columnheader "Producto" [ref=e47]
+              - columnheader "Stock" [ref=e48]
+              - columnheader "Mínimo" [ref=e49]
+              - columnheader "Proveedor" [ref=e50]
+              - columnheader [ref=e51]
+          - rowgroup [ref=e52]:
+            - row [ref=e53]:
+              - cell "Café Cabrales 250g" [ref=e54]
+              - cell "0" [ref=e55]
+              - cell "5" [ref=e56]
+              - cell "Distribuidora El Sol" [ref=e57]
+              - cell [ref=e58]:
+                - button "Anotar" [ref=e59] [cursor=pointer]
+            - row [ref=e60]:
+              - cell "Agua Villavicencio 2L" [ref=e61]
+              - cell "3" [ref=e62]
+              - cell "10" [ref=e63]
+              - cell "Bebidas del Barrio" [ref=e64]
+              - cell [ref=e65]:
+                - button "Anotar" [ref=e66] [cursor=pointer]
+            - row [ref=e67]:
+              - cell "Detergente Magistral 750ml" [ref=e68]
+              - cell "2" [ref=e69]
+              - cell "8" [ref=e70]
+              - cell "Química Limpieza SRL" [ref=e71]
+              - cell [ref=e72]:
+                - button "Anotar" [ref=e73] [cursor=pointer]
+            - row [ref=e74]:
+              - cell "Harina Pureza 1kg" [ref=e75]
+              - cell "6" [ref=e76]
+              - cell "10" [ref=e77]
+              - cell "Distribuidora El Sol" [ref=e78]
+              - cell [ref=e79]:
+                - button "Anotar" [ref=e80] [cursor=pointer]
+        - button "Anotar todos en lista de reposición" [ref=e82] [cursor=pointer]
+      - generic [ref=e83]:
+        - heading "Actividad de hoy" [level=2] [ref=e84]
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - generic [ref=e87]: Unidades ingresadas
+            - generic [ref=e88]: "0"
+          - generic [ref=e89]:
+            - generic [ref=e90]: Unidades vendidas
+            - generic [ref=e91]: "0"
+        - heading "Últimos movimientos" [level=2] [ref=e92]
+        - table [ref=e94]:
+          - rowgroup [ref=e95]:
+            - row [ref=e96]:
+              - columnheader "Producto" [ref=e97]
+              - columnheader "Tipo" [ref=e98]
+              - columnheader "Cant." [ref=e99]
+              - columnheader "Fecha" [ref=e100]
+          - rowgroup [ref=e101]:
+            - row [ref=e102]:
+              - cell "Café Cabrales 250g" [ref=e103]
+              - cell "⬇ Salida" [ref=e104]
+              - cell "20" [ref=e105]
+              - cell "2026-11-06 23:24:27" [ref=e106]
+            - row [ref=e107]:
+              - cell "Leche La Serenísima Entera 1L" [ref=e108]
+              - cell "⬆ Entrada" [ref=e109]
+              - cell "48" [ref=e110]
+              - cell "2026-11-06 23:24:27" [ref=e111]
+            - row [ref=e112]:
+              - cell "Arroz Gallo Oro 1kg" [ref=e113]
+              - cell "⬆ Entrada" [ref=e114]
+              - cell "40" [ref=e115]
+              - cell "2026-11-05 23:24:27" [ref=e116]

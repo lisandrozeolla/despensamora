@@ -1,0 +1,78 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "DESPENSA MORA Control de Stock" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - text: DESPENSA MORA
+      - generic [ref=e4]: Control de Stock
+    - navigation [ref=e5]:
+      - link "Tablero" [ref=e6] [cursor=pointer]:
+        - /url: /
+      - link "Venta" [ref=e7] [cursor=pointer]:
+        - /url: /venta
+      - link "Ingresos" [ref=e8] [cursor=pointer]:
+        - /url: /ingreso
+      - link "Reposición" [ref=e9] [cursor=pointer]:
+        - /url: /reposicion
+      - link "Productos" [ref=e10] [cursor=pointer]:
+        - /url: /productos
+      - link "Proveedores" [ref=e11] [cursor=pointer]:
+        - /url: /proveedores
+      - link "Etiquetas" [ref=e12] [cursor=pointer]:
+        - /url: /etiquetas
+      - link "Manual" [ref=e13] [cursor=pointer]:
+        - /url: /manual
+  - generic [ref=e14]:
+    - generic [ref=e15]: ▮▮▮
+    - textbox "Escaneá el código de barras (o escribilo) y presioná Enter…" [active] [ref=e16]
+    - generic [ref=e17]: Lector USB listo
+  - main [ref=e18]:
+    - heading "Lista de reposición" [level=1] [ref=e19]
+    - paragraph [ref=e20]: Anotados → Pedido al proveedor → Recepción (ingreso) o reclamo. Los casos en reclamo se pueden recibir, devolver a pedido o quitar.
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - heading "Lista de reposición" [level=2] [ref=e23]
+        - generic [ref=e24]:
+          - button "Todos" [ref=e25] [cursor=pointer]
+          - button "Anotados" [ref=e26] [cursor=pointer]
+          - button "Pedidos" [ref=e27] [cursor=pointer]
+          - button "Recibidos" [ref=e28] [cursor=pointer]
+          - button "Reclamos" [ref=e29] [cursor=pointer]
+        - table [ref=e31]:
+          - rowgroup [ref=e32]:
+            - row [ref=e33]:
+              - columnheader "Producto" [ref=e34]
+              - columnheader "Stock" [ref=e35]
+              - columnheader "Cant. a pedir" [ref=e36]
+              - columnheader "Proveedor" [ref=e37]
+              - columnheader "Estado" [ref=e38]
+              - columnheader [ref=e39]
+          - rowgroup [ref=e40]:
+            - row [ref=e41]:
+              - cell "Lector Codigo de barras" [ref=e42]
+              - cell "60 / 15" [ref=e43]
+              - cell "30" [ref=e44]
+              - cell "Jorge" [ref=e45]
+              - cell "Recibido" [ref=e46]
+              - cell [ref=e48]:
+                - button "🗑 Quitar" [ref=e50] [cursor=pointer]
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - heading "Pedir al proveedor" [level=2] [ref=e53]
+          - generic [ref=e54]:
+            - generic [ref=e55]: Proveedor
+            - combobox "Proveedor" [ref=e56]:
+              - option "— Todos los proveedores —" [selected]
+              - option "Jorge"
+          - button "📤 Generar pedido" [ref=e57] [cursor=pointer]
+          - button "🖨 Imprimir solicitud" [ref=e58] [cursor=pointer]
+          - paragraph [ref=e59]: Pasa los productos anotados al estado “pedido” (paso Pedido al Proveedor del cursograma).
+        - generic [ref=e60]:
+          - heading "Stock mínimo" [level=2] [ref=e61]
+          - button "🔻 Anotar todo lo que está en el mínimo" [ref=e62] [cursor=pointer]
+        - generic [ref=e63]:
+          - heading "Anotar por código" [level=2] [ref=e64]
+          - generic [ref=e65]:
+            - generic [ref=e66]: Escaneá o escribí el código
+            - textbox "Escaneá o escribí el código" [ref=e67]:
+              - /placeholder: Código de barras…
+          - button "➕ Anotar en la lista" [ref=e68] [cursor=pointer]

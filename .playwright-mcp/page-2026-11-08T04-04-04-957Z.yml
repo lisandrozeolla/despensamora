@@ -1,0 +1,108 @@
+- generic [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - link "DESPENSA MORA Control de Stock" [ref=f1e3] [cursor=pointer]:
+      - /url: /
+      - text: DESPENSA MORA
+      - generic [ref=f1e4]: Control de Stock
+    - navigation [ref=f1e5]:
+      - link "Tablero" [ref=f1e6] [cursor=pointer]:
+        - /url: /
+      - link "Venta" [ref=f1e7] [cursor=pointer]:
+        - /url: /venta
+      - link "Ingresos" [ref=f1e8] [cursor=pointer]:
+        - /url: /ingreso
+      - link "Reposición" [ref=f1e9] [cursor=pointer]:
+        - /url: /reposicion
+      - link "Productos" [ref=f1e10] [cursor=pointer]:
+        - /url: /productos
+      - link "Proveedores" [ref=f1e11] [cursor=pointer]:
+        - /url: /proveedores
+      - link "Etiquetas" [ref=f1e12] [cursor=pointer]:
+        - /url: /etiquetas
+      - link "Manual" [ref=f1e13] [cursor=pointer]:
+        - /url: /manual
+  - generic [ref=f1e14]:
+    - generic [ref=f1e15]: ▮▮▮
+    - textbox "Escaneá el código de barras (o escribilo) y presioná Enter…" [active] [ref=f1e16]
+    - generic [ref=f1e17]: Lector USB listo
+  - main [ref=f1e18]:
+    - heading "Tablero de indicadores" [level=1] [ref=f1e19]
+    - paragraph [ref=f1e20]: Estado general del stock de Despensa Mora
+    - generic [ref=f1e21]:
+      - generic [ref=f1e22]:
+        - generic [ref=f1e23]: Valor del stock
+        - generic [ref=f1e24]: $ 3.000.000,00
+      - generic [ref=f1e25]:
+        - generic [ref=f1e26]: Productos
+        - generic [ref=f1e27]: "1"
+      - generic [ref=f1e28]:
+        - generic [ref=f1e29]: Unidades en stock
+        - generic [ref=f1e30]: "60"
+      - generic [ref=f1e31]:
+        - generic [ref=f1e32]: Faltantes (0 unidades)
+        - generic [ref=f1e33]: "0"
+      - generic [ref=f1e34]:
+        - generic [ref=f1e35]: Bajo mínimo
+        - generic [ref=f1e36]: "0"
+      - generic [ref=f1e37]:
+        - generic [ref=f1e38]: Pendientes de reposición
+        - generic [ref=f1e39]: "0"
+    - generic [ref=f1e40]:
+      - generic [ref=f1e41]:
+        - generic [ref=f1e42]:
+          - heading "Notifica faltantes" [level=2] [ref=f1e43]
+          - paragraph [ref=f1e44]: Productos sin stock o en el mínimo — solicitud de reposición al proveedor
+          - generic [ref=f1e45]: "Sin alertas: todo el stock está por encima del mínimo."
+          - button "Anotar todos en lista de reposición" [ref=f1e47] [cursor=pointer]
+        - generic [ref=f1e48]:
+          - heading "Reclamos al proveedor" [level=2] [ref=f1e49]
+          - paragraph [ref=f1e50]: Pedidos cerrados con mercadería que no llegó en buen estado
+          - generic [ref=f1e51]: Sin reclamos pendientes.
+      - generic [ref=f1e52]:
+        - heading "Actividad de hoy" [level=2] [ref=f1e53]
+        - generic [ref=f1e54]:
+          - generic [ref=f1e55]:
+            - generic [ref=f1e56]: Unidades ingresadas
+            - generic [ref=f1e57]: "31"
+          - generic [ref=f1e58]:
+            - generic [ref=f1e59]: Unidades vendidas
+            - generic [ref=f1e60]: "1"
+        - heading "Últimos movimientos" [level=2] [ref=f1e61]
+        - table [ref=f1e63]:
+          - rowgroup [ref=f1e64]:
+            - row [ref=f1e65]:
+              - columnheader "Producto" [ref=f1e66]
+              - columnheader "Tipo" [ref=f1e67]
+              - columnheader "Cant." [ref=f1e68]
+              - columnheader "Fecha" [ref=f1e69]
+          - rowgroup [ref=f1e70]:
+            - row [ref=f1e71]:
+              - cell "Lector Codigo de barras" [ref=f1e72]
+              - cell "⬆ Entrada" [ref=f1e73]
+              - cell "30" [ref=f1e74]
+              - cell "2026-11-08 00:47:19" [ref=f1e75]
+            - row [ref=f1e76]:
+              - cell "Lector Codigo de barras" [ref=f1e77]
+              - cell "⬆ Entrada" [ref=f1e78]
+              - cell "1" [ref=f1e79]
+              - cell "2026-11-08 00:42:56" [ref=f1e80]
+            - row [ref=f1e81]:
+              - cell "Lector Codigo de barras" [ref=f1e82]
+              - cell "⬇ Salida" [ref=f1e83]
+              - cell "1" [ref=f1e84]
+              - cell "2026-11-08 00:32:30" [ref=f1e85]
+            - row [ref=f1e86]:
+              - cell "Lector Codigo de barras" [ref=f1e87]
+              - cell "⬆ Entrada" [ref=f1e88]
+              - cell "30" [ref=f1e89]
+              - cell "2026-11-07 23:38:19" [ref=f1e90]
+            - row [ref=f1e91]:
+              - cell "Lector Codigo de barras" [ref=f1e92]
+              - cell "⬇ Salida" [ref=f1e93]
+              - cell "13" [ref=f1e94]
+              - cell "2026-11-07 23:37:13" [ref=f1e95]
+            - row [ref=f1e96]:
+              - cell "Lector Codigo de barras" [ref=f1e97]
+              - cell "⬇ Salida" [ref=f1e98]
+              - cell "1" [ref=f1e99]
+              - cell "2026-11-07 23:36:09" [ref=f1e100]

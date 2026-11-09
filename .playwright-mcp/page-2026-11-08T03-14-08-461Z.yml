@@ -1,0 +1,118 @@
+- generic [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - link "DESPENSA MORA Control de Stock" [ref=f7e3] [cursor=pointer]:
+      - /url: /
+      - text: DESPENSA MORA
+      - generic [ref=f7e4]: Control de Stock
+    - navigation [ref=f7e5]:
+      - link "Tablero" [ref=f7e6] [cursor=pointer]:
+        - /url: /
+      - link "Venta" [ref=f7e7] [cursor=pointer]:
+        - /url: /venta
+      - link "Ingresos" [ref=f7e8] [cursor=pointer]:
+        - /url: /ingreso
+      - link "Reposición 2" [ref=f7e9] [cursor=pointer]:
+        - /url: /reposicion
+      - link "Productos" [ref=f7e10] [cursor=pointer]:
+        - /url: /productos
+      - link "Proveedores" [ref=f7e11] [cursor=pointer]:
+        - /url: /proveedores
+      - link "Etiquetas" [ref=f7e12] [cursor=pointer]:
+        - /url: /etiquetas
+      - link "Manual" [ref=f7e13] [cursor=pointer]:
+        - /url: /manual
+      - link "Doc. técnica" [ref=f7e14] [cursor=pointer]:
+        - /url: /documentacion
+  - generic [ref=f7e15]:
+    - generic [ref=f7e16]: ▮▮▮
+    - textbox "Escaneá el código de barras (o escribilo) y presioná Enter…" [active] [ref=f7e17]
+    - generic [ref=f7e18]: Lector USB listo
+  - main [ref=f7e19]:
+    - heading "Manual de usuario" [level=1] [ref=f7e20]
+    - paragraph [ref=f7e21]: Sistema de Control de Stock — Despensa Mora · EDT 5.1.1
+    - generic [ref=f7e22]:
+      - heading "1. Requisitos" [level=2] [ref=f7e23]
+      - list [ref=f7e24]:
+        - listitem [ref=f7e25]: Python 3.10 o superior instalado.
+        - listitem [ref=f7e26]:
+          - text: "Dependencias:"
+          - code [ref=f7e27]: pip install -r requirements.txt
+          - text: (Flask y python-barcode).
+        - listitem [ref=f7e28]: "Lector de códigos de barras USB (opcional, pero recomendado): cualquier lector genérico que funcione como teclado. Sin lector, se puede escribir el código a mano."
+        - listitem [ref=f7e29]: Un navegador (Chrome, Edge, Firefox…).
+    - generic [ref=f7e30]:
+      - heading "2. Cómo iniciar el sistema" [level=2] [ref=f7e31]
+      - list [ref=f7e32]:
+        - listitem [ref=f7e33]: Abrí una terminal en la carpeta del proyecto.
+        - listitem [ref=f7e34]:
+          - text: "Ejecutá:"
+          - code [ref=f7e35]: python app.py
+        - listitem [ref=f7e36]: Abrí el navegador en http://127.0.0.1:5000
+      - paragraph [ref=f7e37]:
+        - text: La base de datos se crea sola con datos de ejemplo. Si querés volver a los datos iniciales, borrá el archivo
+        - code [ref=f7e38]: stock.db
+        - text: y ejecutá
+        - code [ref=f7e39]: python db.py
+        - text: .
+    - generic [ref=f7e40]:
+      - heading "3. El lector de códigos de barras" [level=2] [ref=f7e41]
+      - list [ref=f7e42]:
+        - listitem [ref=f7e43]: Hacé clic en la barra superior (“Escaneá el código de barras…”). Si no hay otro campo activo, el foco queda ahí automáticamente.
+        - listitem [ref=f7e44]: "Apuntá al código y escaneá: el lector escribe el código y envía Enter solo."
+        - listitem [ref=f7e45]: El sistema procesa el código según la pantalla en la que estés (ver abajo).
+        - listitem [ref=f7e46]: "Sin lector, escribí el código a mano y presioná Enter: funciona igual."
+    - generic [ref=f7e47]:
+      - heading "4. Pantallas" [level=2] [ref=f7e48]
+      - heading "4.1 Tablero" [level=3] [ref=f7e49]
+      - list [ref=f7e50]:
+        - listitem [ref=f7e51]: Muestra el valor total del stock, cantidad de productos y unidades.
+        - listitem [ref=f7e52]: "Faltantes (0 unidades) y bajo mínimo: con el botón “Anotar todos en lista de reposición” se agregan de una vez."
+        - listitem [ref=f7e53]: "Reclamos al proveedor: pedidos que no llegaron en buen estado."
+        - listitem [ref=f7e54]: "Actividad de hoy: unidades ingresadas y vendidas, y los últimos movimientos."
+      - heading "4.2 Venta (salida de stock)" [level=3] [ref=f7e55]
+      - list [ref=f7e56]:
+        - listitem [ref=f7e57]: "Escaneá los productos del cliente: entran al carrito con precio y stock."
+        - listitem [ref=f7e58]: Ajustá cantidades o quitá líneas si hace falta.
+        - listitem [ref=f7e59]: "Presioná “Confirmar venta y registrar salida”: el sistema descuenta el stock y registra la salida."
+        - listitem [ref=f7e60]: Si el producto no tiene stock, aparece el panel “Sin stock” con un botón para anotarlo en la lista de reposición.
+        - listitem [ref=f7e61]: Después de la venta podés imprimir el ticket con el detalle y el total.
+      - heading "4.3 Ingresos" [level=3] [ref=f7e62]
+      - list [ref=f7e63]:
+        - listitem [ref=f7e64]:
+          - text: "Pedidos al proveedor — recepción: para cada pedido pendiente cargá la cantidad recibida y elegí:"
+          - list [ref=f7e65]:
+            - listitem [ref=f7e66]: "“✓ Llegó bien → ingresar”: suma el stock y lo registra como entrada;"
+            - listitem [ref=f7e67]: "“✗ Reclamar al proveedor”: deja el caso como reclamo (no suma stock)."
+        - listitem [ref=f7e68]: "Ingreso directo: escaneá los productos recibidos, elegí el proveedor y registrá la entrada (compra mayorista o minorista)."
+      - heading "4.4 Reposición" [level=3] [ref=f7e69]
+      - list [ref=f7e70]:
+        - listitem [ref=f7e71]: La lista se llena sola cuando un producto llega al stock mínimo, o se anota escaneando el código en “Anotar por código”.
+        - listitem [ref=f7e72]: "Filtrá por estado: Anotados → Pedidos → Recibidos / Reclamos."
+        - listitem [ref=f7e73]: “📤 Generar pedido” pasa los anotados a pedido (elegí el proveedor o todos).
+        - listitem [ref=f7e74]: “🖨 Imprimir solicitud” genera el documento para el dueño (por proveedor).
+        - listitem [ref=f7e75]: Al recibir, marcá “Recibido” (con cantidad) o “Reclamar”.
+      - heading "4.5 Productos" [level=3] [ref=f7e76]
+      - list [ref=f7e77]:
+        - listitem [ref=f7e78]: "Alta, edición y baja del maestro: código de barras, nombre, categoría, precio, stock actual, stock mínimo y proveedor."
+        - listitem [ref=f7e79]: "Escaneando un código: si existe, lo busca en la lista; si no existe, precarga el código para darlo de alta."
+      - heading "4.6 Proveedores" [level=3] [ref=f7e80]
+      - list [ref=f7e81]:
+        - listitem [ref=f7e82]: Alta y baja de proveedores con contacto. No se puede eliminar uno que tenga productos asociados.
+      - heading "4.7 Etiquetas" [level=3] [ref=f7e83]
+      - list [ref=f7e84]:
+        - listitem [ref=f7e85]: Muestra la etiqueta con el código de barras (EAN-13) de cada producto.
+        - listitem [ref=f7e86]: “Ver” la abre en otra pestaña; “🖨 Imprimir” la manda a la impresora.
+    - generic [ref=f7e87]:
+      - heading "5. Flujo completo para la demostración (cursograma “Control Stock”)" [level=2] [ref=f7e88]
+      - list [ref=f7e89]:
+        - listitem [ref=f7e90]: En Venta, escaneá un producto sin stock → se ofrece anotarlo en la lista de reposición → “Anotar”.
+        - listitem [ref=f7e91]: En Reposición, ve el caso como “Anotado” → “Generar pedido”.
+        - listitem [ref=f7e92]: El caso pasa a “Pedido” → entrá a Ingresos → “Llegó bien → ingresar” con la cantidad, o “Reclamar al proveedor”.
+        - listitem [ref=f7e93]: Si ingresaste, el stock vuelve a crecer y el caso queda “Recibido” (o “Reclamo”, que aparece en el Tablero).
+        - listitem [ref=f7e94]: El Tablero muestra las alertas y el valor del stock actualizado.
+    - generic [ref=f7e95]:
+      - heading "6. Impresiones disponibles" [level=2] [ref=f7e96]
+      - list [ref=f7e97]:
+        - listitem [ref=f7e98]: Ticket de venta — botón “🖨 Imprimir ticket” después de confirmar la venta.
+        - listitem [ref=f7e99]: Solicitud de reposición — Reposición → “🖨 Imprimir solicitud”.
+        - listitem [ref=f7e100]: Etiquetas de código de barras — pantalla Etiquetas.

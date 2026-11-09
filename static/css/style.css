@@ -1,0 +1,248 @@
+/* Despensa Mora - Control de Stock
+   Paleta corporativa blanco y negro (igual que la presentacion del TP). */
+
+:root {
+  --negro: #111111;
+  --gris-oscuro: #333333;
+  --gris: #6b6b6b;
+  --gris-claro: #e8e8e8;
+  --fondo: #f4f4f4;
+  --blanco: #ffffff;
+  --rojo: #c62828;
+  --verde: #2e7d32;
+  --ambar: #ef6c00;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  background: var(--fondo);
+  color: var(--negro);
+}
+
+/* ---------- Barra superior ---------- */
+.topbar {
+  background: var(--negro);
+  color: var(--blanco);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 20px;
+  flex-wrap: wrap;
+}
+.brand {
+  color: var(--blanco);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-decoration: none;
+  font-size: 18px;
+}
+.brand span {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  color: #bdbdbd;
+}
+.nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.nav a {
+  color: #d7d7d7;
+  text-decoration: none;
+  padding: 7px 13px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.nav a:hover { background: var(--gris-oscuro); color: var(--blanco); }
+.nav a.active { background: var(--blanco); color: var(--negro); font-weight: 600; }
+
+.badge {
+  background: var(--rojo);
+  color: var(--blanco);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.hidden { display: none !important; }
+
+/* ---------- Barra de escaneo ---------- */
+.scanbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--blanco);
+  border-bottom: 3px solid var(--negro);
+  padding: 10px 20px;
+}
+.scan-icon { color: var(--gris); font-size: 13px; letter-spacing: -2px; }
+#scan-input {
+  flex: 1;
+  border: 1px solid var(--gris-claro);
+  background: var(--fondo);
+  padding: 11px 14px;
+  font-size: 16px;
+  border-radius: 4px;
+  outline: none;
+}
+#scan-input:focus {
+  border-color: var(--negro);
+  background: var(--blanco);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, .08);
+}
+.scan-hint { font-size: 12px; color: var(--gris); white-space: nowrap; }
+
+/* ---------- Pagina ---------- */
+.pagina { max-width: 1150px; margin: 22px auto; padding: 0 20px 60px; }
+
+h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -.5px; }
+h2 { font-size: 17px; margin: 26px 0 10px; }
+.subtitulo { color: var(--gris); margin: 0 0 20px; font-size: 14px; }
+
+/* ---------- Tarjetas ---------- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.card {
+  background: var(--blanco);
+  border: 1px solid var(--gris-claro);
+  border-top: 4px solid var(--negro);
+  border-radius: 6px;
+  padding: 16px;
+}
+.card .valor { font-size: 30px; font-weight: 800; white-space: nowrap; }
+.card .etiqueta { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--gris); }
+.card.rojo { border-top-color: var(--rojo); }
+.card.rojo .valor { color: var(--rojo); }
+.card.verde { border-top-color: var(--verde); }
+.card.verde .valor { color: var(--verde); }
+.card.ambar { border-top-color: var(--ambar); }
+.card.ambar .valor { color: var(--ambar); }
+
+/* ---------- Paneles y tablas ---------- */
+.panel {
+  background: var(--blanco);
+  border: 1px solid var(--gris-claro);
+  border-radius: 6px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+.panel h2 { margin-top: 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--gris-claro); }
+th {
+  background: var(--negro);
+  color: var(--blanco);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+tbody tr:hover { background: #fafafa; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.sin-datos { color: var(--gris); padding: 16px; text-align: center; font-style: italic; }
+
+/* ---------- Estados ---------- */
+.estado {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.estado.anotado { background: #fff3e0; color: var(--ambar); }
+.estado.pedido { background: #e3f2fd; color: #1565c0; }
+.estado.recibido { background: #e8f5e9; color: var(--verde); }
+.estado.reclamo { background: #ffebee; color: var(--rojo); }
+.poco { color: var(--ambar); font-weight: 700; }
+.sin-stock { color: var(--rojo); font-weight: 700; }
+
+/* ---------- Formularios ---------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.campo { display: flex; flex-direction: column; gap: 4px; }
+.campo label { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--gris); }
+input, select {
+  border: 1px solid var(--gris-claro);
+  border-radius: 4px;
+  padding: 9px 10px;
+  font-size: 15px;
+  background: var(--blanco);
+}
+input:focus, select:focus { outline: none; border-color: var(--negro); }
+
+/* ---------- Botones ---------- */
+.btn {
+  background: var(--negro);
+  color: var(--blanco);
+  border: none;
+  border-radius: 4px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn:hover { background: var(--gris-oscuro); }
+.btn.secundario { background: var(--blanco); color: var(--negro); border: 1px solid var(--negro); }
+.btn.secundario:hover { background: var(--gris-claro); }
+.btn.peligro { background: var(--rojo); }
+.btn.peligro:hover { background: #8e0000; }
+.btn.chico { padding: 5px 10px; font-size: 12px; }
+.btn.verde { background: var(--verde); }
+.btn.verde:hover { background: #1b5e20; }
+.acciones { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ---------- Layout de venta ---------- */
+.split { display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 850px) { .split { grid-template-columns: 1fr; } }
+
+.total-linea {
+  display: flex;
+  justify-content: space-between;
+  font-size: 22px;
+  font-weight: 800;
+  padding: 12px 0;
+  border-top: 2px solid var(--negro);
+  margin-top: 10px;
+}
+
+/* ---------- Mensajes ---------- */
+.mensaje { padding: 11px 14px; border-radius: 4px; font-size: 14px; margin-bottom: 12px; }
+.mensaje.ok { background: #e8f5e9; color: var(--verde); border: 1px solid #a5d6a7; }
+.mensaje.error { background: #ffebee; color: var(--rojo); border: 1px solid #ef9a9a; }
+.mensaje.info { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--negro);
+  color: var(--blanco);
+  padding: 12px 22px;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+  z-index: 50;
+}
+.toast.error { background: var(--rojo); }
+
+/* ---------- Etiquetas ---------- */
+.etiqueta-preview { background: var(--blanco); border: 1px solid var(--gris-claro); padding: 4px; }
+.etiqueta-preview img { height: 52px; display: block; }
+
+@media print {
+  .topbar, .scanbar, .acciones, .btn { display: none !important; }
+  body { background: var(--blanco); }
+}

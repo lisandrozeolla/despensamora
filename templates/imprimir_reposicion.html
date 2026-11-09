@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Solicitud de reposición · Despensa Mora</title>
+  <style>
+    /* Página pensada para imprimir en A4 */
+    body { font-family: "Segoe UI", Arial, sans-serif; margin: 30px; color: #111; }
+    .acciones { margin-bottom: 16px; }
+    .btn {
+      background: #111; color: #fff; border: none; border-radius: 4px;
+      padding: 9px 16px; font-size: 14px; cursor: pointer; text-decoration: none;
+      display: inline-block;
+    }
+    .btn.secundario { background: #fff; color: #111; border: 1px solid #111; }
+    .encabezado { border-bottom: 3px solid #111; padding-bottom: 8px; margin-bottom: 14px; }
+    .encabezado h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
+    .encabezado .titulo { font-size: 17px; font-weight: 600; margin-top: 6px; }
+    .meta { display: flex; gap: 30px; font-size: 13px; margin: 10px 0 18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border: 1px solid #333; padding: 7px 9px; text-align: left; }
+    th { background: #111; color: #fff; font-size: 11px; text-transform: uppercase; }
+    td.num, th.num { text-align: right; }
+    .pie { margin-top: 26px; display: flex; gap: 60px; font-size: 12px; }
+    .firma { flex: 1; border-top: 1px solid #111; padding-top: 5px; text-align: center; }
+    .aviso { font-size: 12px; color: #555; margin-top: 14px; }
+    @media print { .acciones { display: none; } body { margin: 12mm; } }
+  </style>
+</head>
+<body>
+  <div class="acciones">
+    <button class="btn" onclick="window.print()">🖨 Imprimir</button>
+    <button class="btn secundario" onclick="history.back()">← Volver</button>
+  </div>
+
+  <div class="encabezado">
+    <h1>DESPENSA MORA</h1>
+    <div class="titulo">Solicitud de reposición</div>
+  </div>
+
+  <!-- Diagrama de contexto: "Solicitud de reposición" -> Dueño -->
+  <div class="meta">
+    <span><b>Fecha:</b> {{ fecha }}</span>
+    <span><b>Proveedor:</b> {{ proveedor }}</span>
+    <span><b>Ítems:</b> {{ items|length }}</span>
+  </div>
+
+  {% if items %}
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Código de barras</th>
+        <th class="num">Stock actual</th>
+        <th class="num">Stock mínimo</th>
+        <th class="num">Cantidad a pedir</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in items %}
+      <tr>
+        <td>{{ i.nombre }}</td>
+        <td>{{ i.codigo_barras }}</td>
+        <td class="num">{{ i.stock_actual }}</td>
+        <td class="num">{{ i.stock_minimo }}</td>
+        <td class="num">{{ i.cantidad_sugerida }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="pie">
+    <div class="firma">Firma del encargado</div>
+    <div class="firma">Recibido por el proveedor</div>
+  </div>
+  {% else %}
+  <p>No hay productos anotados ni pedidos para reposición.</p>
+  {% endif %}
+
+  <p class="aviso">
+    Documento generado por el Sistema de Control de Stock de Despensa Mora
+    (EDT 5.1 — documentación / diagrama de contexto, flujo “Solicitud de reposición”).
+  </p>
+</body>
+</html>

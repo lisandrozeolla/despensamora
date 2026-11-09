@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Tablero{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<p class="subtitulo">Estado general del stock de Despensa Mora</p>
+
+<div class="cards">
+  <div class="card"><div class="etiqueta">Valor del stock</div>
+    <div class="valor" id="k-valor">—</div></div>
+  <div class="card"><div class="etiqueta">Productos</div>
+    <div class="valor" id="k-productos">—</div></div>
+  <div class="card"><div class="etiqueta">Unidades en stock</div>
+    <div class="valor" id="k-unidades">—</div></div>
+  <div class="card rojo"><div class="etiqueta">Faltantes (0 unidades)</div>
+    <div class="valor" id="k-faltantes">—</div></div>
+  <div class="card ambar"><div class="etiqueta">Bajo mínimo</div>
+    <div class="valor" id="k-bajos">—</div></div>
+  <div class="card verde"><div class="etiqueta">Pendientes de reposición</div>
+    <div class="valor" id="k-pendientes">—</div></div>
+</div>
+
+<div class="split">
+  <div>
+    <div class="panel">
+      <h2>Notifica faltantes</h2>
+      <p class="subtitulo">Productos sin stock o en el mínimo — solicitud de reposición al proveedor</p>
+      <div id="alertas-lista" class="sin-datos">Cargando…</div>
+      <div style="margin-top:12px">
+        <button class="btn" id="btn-anotar-todos">Anotar todos en lista de reposición</button>
+      </div>
+    </div>
+
+    <!-- Cursograma: "Reclamar al Proveedor" -->
+    <div class="panel">
+      <h2>Reclamos al proveedor</h2>
+      <p class="subtitulo">Pedidos cerrados con mercadería que no llegó en buen estado</p>
+      <div id="reclamos-lista" class="sin-datos">Cargando…</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Actividad de hoy</h2>
+    <div class="cards" style="grid-template-columns:1fr 1fr">
+      <div class="card verde"><div class="etiqueta">Unidades ingresadas</div>
+        <div class="valor" id="k-entradas">—</div></div>
+      <div class="card"><div class="etiqueta">Unidades vendidas</div>
+        <div class="valor" id="k-ventas">—</div></div>
+    </div>
+    <h2>Últimos movimientos</h2>
+    <div id="movimientos" class="sin-datos">Cargando…</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const money = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });
+
+function stockClase(p) {
+  if (p.stock_actual === 0) return 'sin-stock';
+  if (p.stock_actual <= p.stock_minimo) return 'poco';
+  return '';
+}
+
+async function cargar() {
+  const [dash, alertas] = await Promise.all([
+    fetch('/api/dashboard').then((r) => r.json()),
+    fetch('/api/alertas').then((r) => r.json()),
+  ]);
+
+  document.getElementById('k-valor').textContent = money.format(dash.valor);
+  document.getElementById('k-productos').textContent = dash.productos;
+  document.getElementById('k-unidades').textContent = dash.unidades;
+  document.getElementById('k-faltantes').textContent = dash.faltantes;
+  document.getElementById('k-bajos').textContent = dash.bajos;
+  document.getElementById('k-pendientes').textContent = dash.pendientes;
+  document.getElementById('k-entradas').textContent = dash.entradas_hoy;
+  document.getElementById('k-ventas').textContent = dash.ventas_hoy;
+
+  // Reduce el tamaño del número hasta que entre completo en la tarjeta.
+  document.querySelectorAll('.card .valor').forEach((el) => {
+    let tamaño = 30;
+    el.style.fontSize = `${tamaño}px`;
+    while (el.scrollWidth > el.clientWidth && tamaño > 16) {
+      tamaño -= 2;
+      el.style.fontSize = `${tamaño}px`;
+    }
+  });
+
+  // Lista de faltantes con boton para anotar en reposicion
+  const cont = document.getElementById('alertas-lista');
+  const todos = [...alertas.faltantes, ...alertas.bajo_minimo];
+  if (!todos.length) {
+    cont.className = 'sin-datos';
+    cont.textContent = 'Sin alertas: todo el stock está por encima del mínimo.';
+  } else {
+    cont.className = '';
+    cont.innerHTML = `<table><thead><tr>
+        <th>Producto</th><th>Stock</th><th>Mínimo</th><th>Proveedor</th><th></th>
+      </tr></thead><tbody>` +
+      todos.map((p) => `<tr>
+        <td>${p.nombre}</td>
+        <td class="num ${stockClase(p)}">${p.stock_actual}</td>
+        <td class="num">${p.stock_minimo}</td>
+        <td>${p.proveedor}</td>
+        <td><button class="btn chico secundario" data-id="${p.id}">Anotar</button></td>
+      </tr>`).join('') + '</tbody></table>';
+    cont.querySelectorAll('button[data-id]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const r = await fetch('/api/reposicion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ producto_id: btn.dataset.id }),
+        });
+        const d = await r.json();
+        toast(d.ok ? d.mensaje : d.error, r.ok ? 'ok' : 'error');
+        cargar();
+      });
+    });
+  }
+
+  // Reclamos al proveedor (cursograma: "Reclamar al Proveedor")
+  const reclamos = await fetch('/api/reposicion?estado=reclamo').then((r) => r.json());
+  const contRecl = document.getElementById('reclamos-lista');
+  if (!reclamos.length) {
+    contRecl.className = 'sin-datos';
+    contRecl.textContent = 'Sin reclamos pendientes.';
+  } else {
+    contRecl.className = '';
+    contRecl.innerHTML = `<table><thead><tr>
+        <th>Producto</th><th>Proveedor</th><th>Fecha</th>
+      </tr></thead><tbody>` +
+      reclamos.map((r) => `<tr>
+        <td>${r.nombre}</td>
+        <td>${r.proveedor}</td>
+        <td>${r.fecha}</td>
+      </tr>`).join('') + '</tbody></table>';
+  }
+
+  // Ultimos movimientos
+  const mov = document.getElementById('movimientos');
+  if (!dash.movimientos.length) {
+    mov.textContent = 'Todavía no hay movimientos.';
+  } else {
+    mov.className = '';
+    mov.innerHTML = `<table><thead><tr>
+        <th>Producto</th><th>Tipo</th><th>Cant.</th><th>Fecha</th>
+      </tr></thead><tbody>` +
+      dash.movimientos.map((m) => `<tr>
+        <td>${m.producto}</td>
+        <td>${m.tipo === 'entrada' ? '⬆ Entrada' : '⬇ Salida'}</td>
+        <td class="num">${m.cantidad}</td>
+        <td>${m.fecha}</td>
+      </tr>`).join('') + '</tbody></table>';
+  }
+}
+
+document.getElementById('btn-anotar-todos').addEventListener('click', async () => {
+  const r = await fetch('/api/reposicion/anotar-minimos', { method: 'POST' });
+  const d = await r.json();
+  toast(d.anotados ? `${d.anotados} producto(s) anotado(s) en la lista` : 'Ya todo estaba anotado');
+  cargar();
+});
+
+cargar();
+</script>
+{% endblock %}

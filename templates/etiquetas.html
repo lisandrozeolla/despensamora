@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Etiquetas{% endblock %}
+{% block content %}
+<h1>Etiquetas con código de barras</h1>
+<p class="subtitulo">Generación de etiquetas EAN-13 para los productos del sistema.</p>
+
+<div id="msg"></div>
+
+<div class="panel">
+  <h2>Productos</h2>
+  <div class="campo" style="max-width:340px;margin-bottom:12px">
+    <label>Buscar</label>
+    <input id="buscar" type="text" placeholder="Nombre o código…">
+  </div>
+  <div id="tabla" class="sin-datos">Cargando…</div>
+</div>
+
+<!-- Ventana de impresion: se reutiliza para mandar la etiqueta a la impresora -->
+<iframe id="marco-impresion" style="display:none"></iframe>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let todos = [];
+
+function pintar(q) {
+  const filtro = (q || '').toLowerCase();
+  const lista = todos.filter((p) =>
+    p.nombre.toLowerCase().includes(filtro) || p.codigo_barras.includes(filtro));
+  const cont = document.getElementById('tabla');
+  if (!lista.length) {
+    cont.className = 'sin-datos';
+    cont.textContent = 'Sin productos para esa búsqueda.';
+    return;
+  }
+  cont.className = '';
+  cont.innerHTML = `<table><thead><tr>
+      <th>Producto</th><th>Código</th><th>Etiqueta</th><th></th>
+    </tr></thead><tbody>` +
+    lista.map((p) => `<tr>
+      <td>${p.nombre}</td>
+      <td style="font-family:monospace">${p.codigo_barras}</td>
+      <td><span class="etiqueta-preview">
+        <img src="/api/etiqueta/${p.id}" alt="Etiqueta de ${p.nombre}">
+      </span></td>
+      <td><div class="acciones">
+        <a class="btn chico secundario" href="/api/etiqueta/${p.id}" target="_blank">Ver</a>
+        <button class="btn chico" data-imprimir="${p.id}">🖨 Imprimir</button>
+      </div></td>
+    </tr>`).join('') + '</tbody></table>';
+
+  cont.querySelectorAll('[data-imprimir]').forEach((btn) => {
+    btn.addEventListener('click', () => imprimirEtiqueta(Number(btn.dataset.imprimir)));
+  });
+}
+
+function imprimirEtiqueta(id) {
+  const p = todos.find((x) => x.id === id);
+  const html = `<!doctype html><html><head><meta charset="utf-8">
+    <title>Etiqueta ${p.nombre}</title>
+    <style>body{margin:0;display:flex;justify-content:center;padding:12mm;
+      font-family:Arial}img{width:70mm}</style></head>
+    <body><img src="/api/etiqueta/${p.id}" onload="window.print()"></body></html>`;
+  const marco = document.getElementById('marco-impresion');
+  marco.srcdoc = html;
+}
+
+// Escaneo en esta pantalla: resalta la etiqueta del producto escaneado.
+document.addEventListener('scan', async (e) => {
+  const codigo = e.detail.codigo;
+  const r = await fetch(`/api/productos/buscar?codigo=${encodeURIComponent(codigo)}`);
+  if (!r.ok) { toast(`Código ${codigo} no encontrado`, 'error'); return; }
+  const p = await r.json();
+  document.getElementById('buscar').value = p.codigo_barras;
+  pintar(p.codigo_barras);
+  toast(`Etiqueta de ${p.nombre}`);
+  document.getElementById('scan-input').focus();
+});
+
+document.getElementById('buscar').addEventListener('input', (e) => pintar(e.target.value));
+
+fetch('/api/productos')
+  .then((r) => r.json())
+  .then((data) => { todos = data; pintar(''); });
+</script>
+{% endblock %}

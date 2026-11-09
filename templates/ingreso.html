@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Ingresos{% endblock %}
+{% block content %}
+<h1>Ingreso de mercadería</h1>
+<p class="subtitulo">Recepción de pedidos al proveedor e ingresos directos. Todo suma al stock y queda registrado como entrada.</p>
+
+<div id="msg"></div>
+
+<div class="panel">
+  <h2>Pedidos al proveedor — recepción</h2>
+  <p class="subtitulo">Flujo del cursograma: <b>Recibir el pedido → ¿Llegó todo en buen estado?</b></p>
+  <div id="pedidos" class="sin-datos">Cargando…</div>
+</div>
+
+<div class="panel">
+  <h2>Ingreso directo (compra mayorista / minorista)</h2>
+  <p class="subtitulo">Escaneá los productos recibidos y cargá las unidades en el sistema.</p>
+  <div id="directo-vacio" class="sin-datos">Escaneá un código de barras para empezar…</div>
+  <table id="directo-tabla" class="hidden">
+    <thead><tr><th>Producto</th><th class="num">Stock actual</th>
+      <th class="num">Unidades a ingresar</th><th></th></tr></thead>
+    <tbody id="directo"></tbody>
+  </table>
+  <div class="form-grid" style="margin-top:14px">
+    <div class="campo">
+      <label for="prov-directo">Proveedor</label>
+      <select id="prov-directo"><option value="">— Sin proveedor —</option></select>
+    </div>
+    <div class="campo" style="justify-content:end">
+      <button class="btn verde" id="btn-ingreso">⬆ Registrar ingreso en el sistema</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const directo = new Map();  // producto_id -> { producto, cantidad }
+let pedidos = [];
+
+function mostrarMsg(texto, tipo) {
+  const el = document.getElementById('msg');
+  el.innerHTML = texto ? `<div class="mensaje ${tipo}">${texto}</div>` : '';
+}
+
+async function cargarProveedores() {
+  const provs = await fetch('/api/proveedores').then((r) => r.json());
+  const sel = document.getElementById('prov-directo');
+  provs.forEach((p) => {
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = p.nombre;
+    sel.appendChild(o);
+  });
+}
+
+async function cargarPedidos() {
+  pedidos = await fetch('/api/reposicion?estado=pedido').then((r) => r.json());
+  const cont = document.getElementById('pedidos');
+  if (!pedidos.length) {
+    cont.className = 'sin-datos';
+    cont.textContent = 'No hay pedidos pendientes al proveedor. Generá uno desde Reposición.';
+    return;
+  }
+  cont.className = '';
+  cont.innerHTML = `<table><thead><tr>
+      <th>Producto</th><th>Cant. pedida</th><th>Proveedor</th>
+      <th>Fecha pedido</th><th>Acción</th>
+    </tr></thead><tbody>` +
+    pedidos.map((i) => `<tr>
+      <td>${i.nombre}</td>
+      <td class="num">${i.cantidad_sugerida}</td>
+      <td>${i.proveedor}</td>
+      <td>${i.fecha}</td>
+      <td>
+        <div class="acciones">
+          <input type="number" min="1" value="${i.cantidad_sugerida}"
+                 style="width:70px" data-cant="${i.id}">
+          <button class="btn chico verde" data-recibir="${i.id}">✓ Llegó bien → ingresar</button>
+          <button class="btn chico peligro" data-reclamar="${i.id}">✗ Reclamar al proveedor</button>
+        </div>
+      </td>
+    </tr>`).join('') + '</tbody></table>';
+
+  cont.querySelectorAll('[data-recibir]').forEach((btn) => {
+    btn.addEventListener('click', () => cerrarPedido(btn.dataset.recibir, false));
+  });
+  cont.querySelectorAll('[data-reclamar]').forEach((btn) => {
+    btn.addEventListener('click', () => cerrarPedido(btn.dataset.reclamar, true));
+  });
+}
+
+async function cerrarPedido(id, reclamo) {
+  let cantidad = 1;
+  if (!reclamo) {
+    const inp = document.querySelector(`input[data-cant="${id}"]`);
+    cantidad = parseInt(inp.value, 10) || 1;
+  }
+  const r = await fetch(`/api/reposicion/${id}/recepcion`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cantidad, reclamo }),
+  });
+  const d = await r.json();
+  mostrarMsg(d.mensaje || d.error, r.ok ? 'ok' : 'error');
+  toast(d.mensaje || d.error, r.ok ? 'ok' : 'error');
+  if (r.ok) {
+    cargarPedidos();
+    cargarAlertas();
+  }
+}
+
+function pintarDirecto() {
+  const vacio = document.getElementById('directo-vacio');
+  const tabla = document.getElementById('directo-tabla');
+  const cuerpo = document.getElementById('directo');
+  if (!directo.size) {
+    vacio.classList.remove('hidden');
+    tabla.classList.add('hidden');
+    return;
+  }
+  vacio.classList.add('hidden');
+  tabla.classList.remove('hidden');
+  cuerpo.innerHTML = '';
+  for (const [id, linea] of directo) {
+    const p = linea.producto;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.nombre}</td>
+      <td class="num">${p.stock_actual}</td>
+      <td class="num"><input type="number" min="1" value="${linea.cantidad}"
+             data-id="${id}" style="width:70px;text-align:right"></td>
+      <td><button class="btn chico peligro" data-quitar="${id}">Quitar</button></td>`;
+    cuerpo.appendChild(tr);
+  }
+  cuerpo.querySelectorAll('input[data-id]').forEach((inp) => {
+    inp.addEventListener('change', () => {
+      directo.get(Number(inp.dataset.id)).cantidad = Math.max(1, parseInt(inp.value, 10) || 1);
+      pintarDirecto();
+    });
+  });
+  cuerpo.querySelectorAll('[data-quitar]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      directo.delete(Number(btn.dataset.quitar));
+      pintarDirecto();
+    });
+  });
+}
+
+async function cargarAlertas() {
+  await fetch('/api/alertas')
+    .then((r) => r.json())
+    .then((data) => {
+      const badge = document.getElementById('badge-reposicion');
+      if (badge) {
+        badge.textContent = data.total;
+        badge.classList.toggle('hidden', data.total === 0);
+      }
+    });
+}
+
+// Escaneo en esta pantalla: agrega al ingreso directo.
+document.addEventListener('scan', async (e) => {
+  const codigo = e.detail.codigo;
+  const r = await fetch(`/api/productos/buscar?codigo=${encodeURIComponent(codigo)}`);
+  if (!r.ok) { toast(`Código ${codigo} no encontrado`, 'error'); return; }
+  const p = await r.json();
+  const linea = directo.get(p.id);
+  if (linea) linea.cantidad += 1;
+  else directo.set(p.id, { producto: p, cantidad: 1 });
+  pintarDirecto();
+  toast(`${p.nombre} listo para ingresar`);
+  document.getElementById('scan-input').focus();
+});
+
+document.getElementById('btn-ingreso').addEventListener('click', async () => {
+  if (!directo.size) { toast('Escaneá al menos un producto', 'error'); return; }
+  const items = [...directo.values()].map((l) => ({
+    producto_id: l.producto.id, cantidad: l.cantidad,
+  }));
+  const r = await fetch('/api/ingreso', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  });
+  const d = await r.json();
+  if (!r.ok) { mostrarMsg(d.error, 'error'); return; }
+  mostrarMsg(`✅ Ingreso cargado: ${d.items.map((i) => `${i.cantidad}× ${i.nombre}`).join(', ')}`, 'ok');
+  directo.clear();
+  pintarDirecto();
+  cargarAlertas();
+  document.getElementById('scan-input').focus();
+});
+
+cargarProveedores();
+cargarPedidos();
+pintarDirecto();
+</script>
+{% endblock %}

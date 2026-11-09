@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Venta{% endblock %}
+{% block content %}
+<h1>Registrar salida — Venta</h1>
+<p class="subtitulo">Escaneá los productos del cliente. El sistema valida el stock, descuenta y registra la salida.</p>
+
+<div id="msg"></div>
+
+<div class="split">
+  <div class="panel">
+    <h2>Productos de la venta</h2>
+    <div id="carrito-vacio" class="sin-datos">Escaneá un código de barras para agregar productos…</div>
+    <div id="carrito-tabla" class="hidden">
+      <table>
+        <thead><tr>
+          <th>Producto</th><th class="num">Precio</th><th class="num">Stock</th>
+          <th class="num">Cant.</th><th class="num">Subtotal</th><th></th>
+        </tr></thead>
+        <tbody id="carrito"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Resumen</h2>
+    <div class="total-linea"><span>Total</span><span id="total">$ 0,00</span></div>
+    <button class="btn" id="btn-confirmar" style="width:100%">✔ Confirmar venta y registrar salida</button>
+    <p class="subtitulo" style="margin-top:14px">
+      Si un producto no tiene stock, se anota solo en la lista de reposición
+      (paso <b>“¿Hay stock? → No → Anotar en lista de reposición”</b> del cursograma).
+    </p>
+  </div>
+</div>
+
+<div class="panel" id="sin-stock-panel" hidden>
+  <h2>Sin stock — anotar en lista de reposición</h2>
+  <div id="sin-stock-msg" class="mensaje error"></div>
+  <div id="sin-stock-lista"></div>
+</div>
+
+<!-- Ventana de impresion del ticket (Cursograma: "Cobrar y entregar") -->
+<iframe id="marco-ticket" style="display:none"></iframe>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const money = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });
+const carrito = new Map();   // producto_id -> { producto, cantidad }
+let sinStock = [];           // productos escaneados sin unidades disponibles
+
+function mostrarMsg(texto, tipo) {
+  const el = document.getElementById('msg');
+  if (!texto) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="mensaje ${tipo}">${texto}</div>`;
+}
+
+function pintarCarrito() {
+  const vacio = document.getElementById('carrito-vacio');
+  const tabla = document.getElementById('carrito-tabla');
+  const cuerpo = document.getElementById('carrito');
+  if (!carrito.size) {
+    vacio.classList.remove('hidden');
+    tabla.classList.add('hidden');
+    document.getElementById('total').textContent = money.format(0);
+    return;
+  }
+  vacio.classList.add('hidden');
+  tabla.classList.remove('hidden');
+
+  let total = 0;
+  cuerpo.innerHTML = '';
+  for (const [id, linea] of carrito) {
+    const p = linea.producto;
+    const sub = p.precio * linea.cantidad;
+    total += sub;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.nombre}</td>
+      <td class="num">${money.format(p.precio)}</td>
+      <td class="num">${p.stock_actual}</td>
+      <td class="num">
+        <input type="number" min="1" max="${p.stock_actual}" value="${linea.cantidad}"
+               data-id="${id}" style="width:64px;text-align:right">
+      </td>
+      <td class="num">${money.format(sub)}</td>
+      <td><button class="btn chico peligro" data-quitar="${id}">Quitar</button></td>`;
+    cuerpo.appendChild(tr);
+  }
+  document.getElementById('total').textContent = money.format(total);
+
+  cuerpo.querySelectorAll('input[data-id]').forEach((inp) => {
+    inp.addEventListener('change', () => {
+      const linea = carrito.get(Number(inp.dataset.id));
+      let cant = parseInt(inp.value, 10) || 1;
+      if (cant < 1) cant = 1;
+      if (cant > linea.producto.stock_actual) {
+        cant = linea.producto.stock_actual;
+        toast(`Solo hay ${linea.producto.stock_actual} unidades`, 'error');
+      }
+      linea.cantidad = cant;
+      pintarCarrito();
+    });
+  });
+  cuerpo.querySelectorAll('button[data-quitar]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      carrito.delete(Number(btn.dataset.quitar));
+      pintarCarrito();
+    });
+  });
+}
+
+function pintarSinStock() {
+  const panel = document.getElementById('sin-stock-panel');
+  if (!sinStock.length) { panel.hidden = true; return; }
+  panel.hidden = false;
+  document.getElementById('sin-stock-msg').textContent =
+    'Estos productos no tienen unidades disponibles. Se anotan para pedir al proveedor:';
+  document.getElementById('sin-stock-lista').innerHTML =
+    '<div class="acciones">' + sinStock.map((p) =>
+      `<button class="btn secundario" data-anotar="${p.id}">📦 ${p.nombre}</button>`
+    ).join('') + '</div>';
+  document.querySelectorAll('[data-anotar]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const r = await fetch('/api/reposicion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ producto_id: btn.dataset.anotar }),
+      });
+      const d = await r.json();
+      toast(d.mensaje || d.error, r.ok ? 'ok' : 'error');
+      sinStock = sinStock.filter((p) => String(p.id) !== btn.dataset.anotar);
+      pintarSinStock();
+    });
+  });
+}
+
+// Evento global de escaneo (ver static/js/scanner.js)
+document.addEventListener('scan', async (e) => {
+  const codigo = e.detail.codigo;
+  const r = await fetch(`/api/productos/buscar?codigo=${encodeURIComponent(codigo)}`);
+  if (!r.ok) {
+    mostrarMsg(`Código <b>${codigo}</b> no encontrado en el maestro de productos.`, 'error');
+    document.getElementById('scan-input').focus();
+    return;
+  }
+  const p = await r.json();
+  mostrarMsg('');
+
+  if (p.stock_actual <= 0) {
+    // Rama "No" del cursograma: anotar en lista de reposicion.
+    if (!sinStock.some((x) => x.id === p.id)) sinStock.push(p);
+    pintarSinStock();
+    toast(`${p.nombre}: sin stock`, 'error');
+    document.getElementById('scan-input').focus();
+    return;
+  }
+
+  const linea = carrito.get(p.id);
+  if (linea) {
+    if (linea.cantidad < p.stock_actual) {
+      linea.cantidad += 1;
+    } else {
+      toast(`Stock máximo alcanzado (${p.stock_actual})`, 'error');
+    }
+  } else {
+    carrito.set(p.id, { producto: p, cantidad: 1 });
+    toast(`${p.nombre} agregado`);
+  }
+  pintarCarrito();
+  document.getElementById('scan-input').focus();
+});
+
+document.getElementById('btn-confirmar').addEventListener('click', async () => {
+  if (!carrito.size) { toast('Escaneá al menos un producto', 'error'); return; }
+  const items = [...carrito.values()].map((l) => ({
+    producto_id: l.producto.id, cantidad: l.cantidad,
+  }));
+  const r = await fetch('/api/venta', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  });
+  const d = await r.json();
+  if (!r.ok) {
+    mostrarMsg(d.error, 'error');
+    return;
+  }
+  // Cursograma: "Cobrar y entregar producto al cliente" -> muestra el ticket.
+  mostrarMsg(
+    `✅ Venta registrada: ${d.items.map((i) => `${i.cantidad}× ${i.nombre}`).join(', ')} — Total ${money.format(d.total)}`,
+    'ok'
+  );
+  document.getElementById('msg').insertAdjacentHTML(
+    'beforeend',
+    '<div style="margin-top:8px"><button class="btn chico" id="btn-ticket">🖨 Imprimir ticket</button></div>'
+  );
+  document.getElementById('btn-ticket').addEventListener('click', () => imprimirTicket(d));
+  carrito.clear();
+  pintarCarrito();
+  document.getElementById('scan-input').focus();
+});
+
+// Genera el ticket de venta y lo manda a la impresora.
+function imprimirTicket(venta) {
+  const fecha = new Date().toLocaleString('es-AR');
+  const filas = venta.items.map((i) => `<tr>
+      <td>${i.cantidad}×</td>
+      <td>${i.nombre}</td>
+      <td style="text-align:right">${money.format(i.precio * i.cantidad)}</td>
+    </tr>`).join('');
+  const html = `<!doctype html><html><head><meta charset="utf-8">
+    <title>Ticket de venta</title>
+    <style>
+      body { font-family: Arial, sans-serif; width: 72mm; margin: 10px auto; font-size: 13px; }
+      h3 { margin: 0 0 2px; letter-spacing: 1px; }
+      .meta { font-size: 11px; color: #444; margin-bottom: 6px; }
+      table { width: 100%; border-collapse: collapse; }
+      td, th { padding: 3px 0; text-align: left; border-bottom: 1px dashed #999; }
+      .total { font-weight: bold; font-size: 16px; border-top: 2px solid #000;
+               border-bottom: none; margin-top: 6px; padding-top: 6px; }
+      .pie { text-align: center; margin-top: 12px; font-size: 11px; }
+    </style></head>
+    <body onload="window.print()">
+      <h3>DESPENSA MORA</h3>
+      <div class="meta">Ticket de venta — ${fecha}</div>
+      <table>
+        <thead><tr><th>Cant.</th><th>Producto</th>
+          <th style="text-align:right">Importe</th></tr></thead>
+        <tbody>${filas}
+          <tr class="total"><td colspan="2">TOTAL</td>
+            <td style="text-align:right">${money.format(venta.total)}</td></tr>
+        </tbody>
+      </table>
+      <div class="pie">Gracias por su compra</div>
+    </body></html>`;
+  document.getElementById('marco-ticket').srcdoc = html;
+}
+
+pintarCarrito();
+</script>
+{% endblock %}
